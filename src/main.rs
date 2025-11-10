@@ -27,7 +27,15 @@ fn main() {
     let body = match Url::parse(&opt.url) {
         Ok(_) => match get_request(&opt.url) {
             Ok(text) => format!("Response body:\n{text}"),
-            Err(_) => "Error: The URL does not have a valid base protocol.".to_string(),
+            Err(e) => {
+                if e.is_builder() {
+                    "Error: The URL does not have a valid base protocol.".to_string()
+                } else if e.is_request() {
+                    "Error: Unable to connect to the server. Perhaps the network is offline or the server hostname cannot be resolved.".to_string()
+                } else {
+                    e.to_string()
+                }
+            }
         },
         Err(e) => match e {
             url::ParseError::RelativeUrlWithoutBase => {
